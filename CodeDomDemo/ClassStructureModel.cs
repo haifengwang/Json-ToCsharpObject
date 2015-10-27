@@ -25,6 +25,11 @@ namespace CodeDomDemo
        /// 属性集合
        /// </summary>
        public List<PropertyModel> PropertyCollection { get; set; }
+
+        /// <summary>
+        /// 文件存放目录名
+        /// </summary>
+       public string FileDirPath { get; set; }
     }
 
    public class PropertyModel

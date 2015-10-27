@@ -22,7 +22,7 @@ namespace CodeDomDemo
                 content = reader.ReadToEnd();
             }
 
-            CodeOrganization code = new CodeOrganization("com.onskylines", "applyResultModel", content);
+            CodeOrganization code = new CodeOrganization("com.onskylines", "applyResultModel", content, @"F:\Baojia");
             code.GenerateCode();
            
         }

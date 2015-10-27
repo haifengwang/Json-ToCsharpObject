@@ -73,9 +73,17 @@ namespace CodeDomDemo
                new CodePropertySetValueReferenceExpression()));
           mClass.Members.Add(ageAtrr);
            * */
+          if (!System.IO.Directory.Exists(model.FileDirPath))
+          {
+              Directory.CreateDirectory(model.FileDirPath);
+          }
 
+          if (!model.FileDirPath.EndsWith("/"))
+          {
+              model.FileDirPath = model.FileDirPath + "/";
+          }
 
-          IndentedTextWriter tw = new IndentedTextWriter(new StreamWriter(string.Format("{0}.cs",model.ClassName), false), "   ");
+          IndentedTextWriter tw = new IndentedTextWriter(new StreamWriter(string.Format("{0}{1}.cs",model.FileDirPath,model.ClassName), false), "   ");
           CodeDomProvider provide = new CSharpCodeProvider();
 
           provide.GenerateCodeFromCompileUnit(unit, tw, new CodeGeneratorOptions());

@@ -19,17 +19,22 @@ namespace CodeDomDemo
 
        public string NameSpaceName { get; private set; }
 
+       public string DirPath { get; set; }
+
        private ClassStructureModel model;
 
        private JsonObject jobj;
 
-       public CodeOrganization(string ns,string cName,string json)
+       public CodeOrganization(string ns,string cName,string json,string dirPath)
        {
            this.NameSpaceName = ns;
+           this.DirPath = dirPath;
 
            model = new ClassStructureModel();
            model.NamespeceName = ns;
            model.ClassName = cName;
+           model.FileDirPath = dirPath;
+           
            model.PropertyCollection = new List<PropertyModel>();
            jobj = JsonValue.Parse(json) as JsonObject;
           
@@ -46,14 +51,20 @@ namespace CodeDomDemo
            {
                foreach (var jb in jobj.Keys)
                {
+                   if (jobj[jb] == null)
+                   {
+                       continue;
+                   }
 
                    if (jobj[jb].JsonType == JsonType.String)
                    {
                        model.PropertyCollection.Add(new PropertyModel("string", jb.ToString()));
+                       continue;
                    }
                    if (jobj[jb].JsonType == JsonType.Boolean)
                    {
                        model.PropertyCollection.Add(new PropertyModel("bool", jb.ToString()));
+                       continue;
                    }
                    if (jobj[jb].JsonType == JsonType.Number)
                    {
@@ -66,8 +77,10 @@ namespace CodeDomDemo
                        {
                            model.PropertyCollection.Add(new PropertyModel("int", jb.ToString()));
                        }
+                       continue;
 
                    }
+                   //数组
                    if (jobj[jb].JsonType == JsonType.Array)
                    {
                        model.PropertyCollection.Add(new PropertyModel(string.Format("List<{0}>", jb.ToString() + "Model"), jb.ToString()));
@@ -76,26 +89,44 @@ namespace CodeDomDemo
 
                        if (jobj[jb].Count > 0)
                        {
-                           var submodel = new ClassStructureModel();
-                           submodel.NamespeceName = this.NameSpaceName;
-                           submodel.ClassName = jb.ToString() + "Model";
-                           submodel.PropertyCollection = new List<PropertyModel>();
                            JsonObject jsobj = jobj[jb][0] as JsonObject;
-                           InnerGenerateCode(jsobj, submodel);
+                           subGenerateStep(jsobj, jb);
                        }
                        else
                        {
                            var submodel = new ClassStructureModel();
                            submodel.NamespeceName = this.NameSpaceName;
                            submodel.ClassName = jb.ToString() + "Model";
+                           submodel.FileDirPath = this.DirPath;
                            InnerGenerateCode(null, submodel);
                        }
+                       continue;
 
+                   }
+                   //对象
+                   if (jobj[jb].JsonType == JsonType.Object)
+                   {
+
+                       JsonObject jsobj = jobj[jb] as JsonObject;
+                       subGenerateStep(jsobj, jb);
+                       continue;
                    }
                }
            }
 
            new CreateCs().Produce(model);
+       }
+
+
+       private void subGenerateStep(JsonObject jsobj, string jb)
+       {
+           var submodel = new ClassStructureModel();
+           submodel.NamespeceName = this.NameSpaceName;
+           submodel.ClassName = jb.ToString() + "Model";
+           submodel.FileDirPath = this.DirPath;
+           submodel.PropertyCollection = new List<PropertyModel>();
+          
+           InnerGenerateCode(jsobj, submodel);
        }
     }
 }
